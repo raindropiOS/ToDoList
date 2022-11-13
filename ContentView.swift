@@ -8,58 +8,121 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.managedObjectContext) var moc
+    @FetchRequest(sortDescriptors: [
+        NSSortDescriptor(keyPath: \SthToDo.userOrder, ascending: true),
+        NSSortDescriptor(keyPath: \SthToDo.timeAdded, ascending: true),
+        
+    ]) var toDoList: FetchedResults<SthToDo>
+    @State private var textInput: String = ""
+    @State private var showingInputAlert: Bool = false
+    @State private var showingRemoveAllAlert: Bool = false
     
-    @ObservedObject var listStore: ListStore = ListStore(list: listData)
+    
+    //    @ObservedObject var listStore: ListStore = ListStore(list: listData)
     
     var body: some View {
+        
         VStack {
             NavigationView {
                 List {
-                    
-                    ForEach(0..<listStore.list.count, id: \.self) { idx in
+                    ForEach(toDoList, id: \.self) { sthToDo in
                         HStack {
                             Button {
-                                listStore.list[idx].isClear.toggle()
+                                sthToDo.isClear.toggle()
                             } label: {
-                                HStack {
-                                    Image(systemName: listStore.list[idx].isClear ? "checkmark.square.fill" : "square" )
-                                        .resizable()
-                                        .foregroundColor(.orange)
-                                        .frame(width: 20, height: 20)
-                                  
-                                }
+                                Image(systemName: sthToDo.isClear ? "checkmark.square.fill" : "square")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width:25)
+                                    .foregroundColor(.orange)
                             }
-                            TextField(listStore.list[idx].contents, text: $listStore.list[idx].contents)
+                            
+                            Text(sthToDo.content ?? "Unknown")
                         }
                     }
-                    .onDelete(perform: deleteItem)
-                    .onMove(perform: moveItem)
+                    .onDelete(perform: deleteTask)
+                    .onMove(perform: moveTask)
                     
-                   
+                    Button {
+                        showingInputAlert = true
+                    } label: {
+                        Text("Add task")
+                            .foregroundColor(.blue)
+                        
+                    }
+                    .alert("task를 추가해주세요", isPresented: $showingInputAlert) {
+                        TextField(text: $textInput, label: {
+                            Text("input here")
+                        })
+                        HStack {
+                            Button("완료", role: .cancel) {}
+                            Button("Add task", role: nil) {
+                                let sthToDo = SthToDo(context: moc)
+                                sthToDo.id = UUID()
+                                sthToDo.content = textInput
+                                sthToDo.timeAdded = Date()
+                                sthToDo.isClear = false
+                                
+                                try? moc.save()
+                            }
+                        }
+                    }
                     
+//                    Button {
+//
+//                    } label: {
+//                        Text("Remove All")
+//                    }
+//                    .alert("Are sure to remove all?", isPresented: $showingRemoveAllAlert) {
+//                        HStack {
+//                            Button {
+//
+//                            } label: {
+//                                Text("Delete")
+//                                    .foregroundColor(.red)
+//
+//                            }
+//
+//                            Button("Cancel", role: .cancel) {}
+//                        }
+//                    }
                 }
                 .navigationTitle(Text("To Do List"))
                 .navigationBarItems(trailing: EditButton())
-                
-                
-                
-            }
-            
-            Button {
-                listStore.list.append(SthToDo(contents: "", isClear: false))
-            } label: {
-                Text("Add new task")
+                //                .toolbar(content: EditButton())
             }
         }
     }
     
-    func deleteItem(at offsets: IndexSet) {
-        listStore.list.remove(atOffsets: offsets)
+    func deleteTask(at offsets: IndexSet) {
+        for index in offsets {
+            let task = toDoList[index]
+            moc.delete(task)
+        }
     }
-    func moveItem(from source: IndexSet, to destination: Int) {
-        listStore.list.move(fromOffsets: source, toOffset: destination)
+    
+    func moveTask( from source: IndexSet, to destination: Int)
+    {
+        // Make an array of items from fetched results
+        var revisedItems: [ SthToDo ] = toDoList.map{ $0 }
+        
+        // change the order of the items in the array
+        revisedItems.move(fromOffsets: source, toOffset: destination )
+        
+        // update the userOrder attribute in revisedItems to
+        // persist the new order. This is done in reverse order
+        // to minimize changes to the indices.
+        for reverseIndex in stride( from: revisedItems.count - 1,
+                                    through: 0,
+                                    by: -1 )
+        {
+            revisedItems[ reverseIndex ].userOrder =
+            Int16( reverseIndex )
+        }
     }
 }
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
