@@ -55,6 +55,8 @@ struct ContentView: View {
                         TextField(text: $textInput, label: {
                             Text("input here")
                         })
+                        .keyboardType(.default)
+                        
                         HStack {
                             Button("완료", role: .cancel) {}
                             Button("Add task", role: nil) {
