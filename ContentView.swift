@@ -49,16 +49,15 @@ struct ContentView: View {
                     } label: {
                         Text("Add task")
                             .foregroundColor(.blue)
-                        
                     }
-                    .alert("task를 추가해주세요", isPresented: $showingInputAlert) {
+                    .alert("You're gonna do...", isPresented: $showingInputAlert) {
                         TextField(text: $textInput, label: {
                             Text("input here")
                         })
                         .keyboardType(.default)
                         
                         HStack {
-                            Button("완료", role: .cancel) {}
+                            Button("Cancel", role: .cancel) {}
                             Button("Add task", role: nil) {
                                 let sthToDo = SthToDo(context: moc)
                                 sthToDo.id = UUID()
@@ -67,6 +66,8 @@ struct ContentView: View {
                                 sthToDo.isClear = false
                                 
                                 try? moc.save()
+                                
+                                textInput = ""
                             }
                         }
                     }
