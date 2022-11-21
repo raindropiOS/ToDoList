@@ -31,7 +31,7 @@ struct ContentView: View {
                             Button {
                                 sthToDo.isClear.toggle()
                             } label: {
-                                Image(systemName: sthToDo.isClear ? "checkmark.square.fill" : "square")
+                                Image(systemName: sthToDo.isClear ? "checkmark.circle.fill" : "circle")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width:25)
