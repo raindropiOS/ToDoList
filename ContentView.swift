@@ -12,7 +12,6 @@ struct ContentView: View {
     @FetchRequest(sortDescriptors: [
         NSSortDescriptor(keyPath: \SthToDo.userOrder, ascending: true),
         NSSortDescriptor(keyPath: \SthToDo.timeAdded, ascending: true),
-        
     ]) var toDoList: FetchedResults<SthToDo>
     @State private var textInput: String = ""
     @State private var showingInputAlert: Bool = false
@@ -31,7 +30,7 @@ struct ContentView: View {
                             Button {
                                 sthToDo.isClear.toggle()
                             } label: {
-                                Image(systemName: sthToDo.isClear ? "checkmark.square.fill" : "square")
+                                Image(systemName: sthToDo.isClear ? "checkmark.circle.fill" : "circle")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width:25)
@@ -71,7 +70,6 @@ struct ContentView: View {
                             }
                         }
                     }
-                    
 //                    Button {
 //
 //                    } label: {
